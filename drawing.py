@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 
+import copy
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
-from qt_classes import DraggableScene
+
 import new_math as math
-import copy
+from graphics.qt_classes import DraggableScene
 
 
 class GridScene(DraggableScene):

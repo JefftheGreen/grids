@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 
-from . import grid
-from variables import Identifier
-import new_math as math
 import decimal
+
 import numpy as np
 import scipy as sp
 import scipy.spatial
+
+import new_math as math
+from utilities.variables import Identifier
+from . import grid
 
 
 class HexGrid(grid.Grid):
