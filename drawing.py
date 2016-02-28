@@ -54,8 +54,7 @@ class GridScene(DraggableScene):
                                'label pen': DEFAULT_LABEL_PEN,
                                'label brush': DEFAULT_LABEL_BRUSH}}
 
-
-    LINK_PEN = None #QtGui.QPen(Qt.black, 10, Qt.SolidLine, Qt.FlatCap)
+    LINK_PEN = None  # QtGui.QPen(Qt.black, 10, Qt.SolidLine, Qt.FlatCap)
 
     ARROW_HEAD = QtGui.QPolygonF([QtCore.QPointF(0,0),
                                   QtCore.QPointF(40,15),
@@ -106,7 +105,9 @@ class GridScene(DraggableScene):
         if event.key() == Qt.Key_Control:
             hovering_grid = None
             for gg in self.grid_groups:
-                if gg.outline.contains(gg.mapFromScene(self.parent().mapToScene(self.parent().mapFromGlobal(QtGui.QCursor.pos())))):
+                scene_pos = self.parent().mapFromGlobal(QtGui.QCursor.pos())
+                local_pos = gg.mapFromScene(self.parent().mapToScene(scene_pos))
+                if gg.outline.contains(local_pos):
                     gg.outline.setPen(QtGui.QPen(Qt.yellow, 30))
                     gg.setOpacity(1)
                     hovering_grid = gg
@@ -144,7 +145,6 @@ class GridScene(DraggableScene):
                 else:
                     gg.setOpacity(1)
                     gg.outline.setPen(QtGui.QPen(Qt.transparent))
-
 
     def on_drag_start(self, click_event, move_event):
         self.grabbed_group = None
@@ -191,7 +191,6 @@ class GridScene(DraggableScene):
 
     def make_link_arc(self, link):
         (source, source_dir), (sink, sink_dir) = link
-        source_subgrid = self.subgrids[source[0]]
         sink_subgrid = self.subgrids[sink[0]]
         if link in self.link_arcs:
             self.removeItem(self.link_arcs[link])
@@ -205,8 +204,10 @@ class GridScene(DraggableScene):
         sink_x, sink_y = self.get_element_location(sink)
         sink_neighbor_x, sink_neighbor_y = self.get_element_location(
             sink_neighbor)
-        start_point = QtCore.QLineF(source_x, source_y, source_neighbor_x, source_neighbor_y).pointAt(0.125)
-        end_point = QtCore.QLineF(sink_x, sink_y, sink_neighbor_x, sink_neighbor_y).pointAt(0.125)
+        start_point = QtCore.QLineF(source_x, source_y, source_neighbor_x,
+                                    source_neighbor_y).pointAt(0.125)
+        end_point = QtCore.QLineF(sink_x, sink_y, sink_neighbor_x,
+                                  sink_neighbor_y).pointAt(0.125)
         end_x, end_y = end_point.x(), end_point.y()
         bezier = QtGui.QPainterPath(start_point)
         bezier.cubicTo(source_neighbor_x, source_neighbor_y,
@@ -245,7 +246,7 @@ class GridScene(DraggableScene):
         subgrid_id, subgrid_element = element[0], element[1:]
         subgrid = self.subgrids[subgrid_id]
         group = self.grid_groups[subgrid_id]
-        x, y = None, None
+        pos = None
         if subgrid.element_type(subgrid_element) == 'face':
             x, y = self.grid.to_pixel_face_center(element)
             x *= self.SCALE
@@ -253,12 +254,18 @@ class GridScene(DraggableScene):
             unadj_pos = QtCore.QPointF(x, y)
             pos = group.mapToScene(unadj_pos)
         elif subgrid.element_type(subgrid_element) == 'edge':
-            # TODO: Write edge code
-            pass
+            x, y = self.grid.to_pixel_edge_mid(subgrid_element)
+            x *= self.SCALE
+            y *= -self.SCALE
+            unadj_pos = QtCore.QPointF(x, y)
+            pos = group.mapToScene(unadj_pos)
         elif subgrid.element_type(subgrid_element) == 'vertex':
-            # TODO: Write vertex code
-            pass
-        return pos.x(), pos.y()
+            x, y = self.grid.to_pixel_vertex(subgrid_element)
+            x *= self.SCALE
+            y *= -self.SCALE
+            unadj_pos = QtCore.QPointF(x, y)
+            pos = group.mapToScene(unadj_pos)
+        return None if pos is None else pos.x(), pos.y()
 
 
 class GridGroup(QtGui.QGraphicsItemGroup):
@@ -281,7 +288,7 @@ class GridGroup(QtGui.QGraphicsItemGroup):
         self.setAcceptsHoverEvents(True)
         self.draw()
         self.outline = QtGui.QGraphicsPathItem(self.shape())
-        outline_pen = QtGui.QPen(Qt.yellow, 20)
+        outline_pen = QtGui.QPen(Qt.transparent, 20)
         outline_pen.setCosmetic(True)
         self.outline.setPen(QtGui.QPen(outline_pen))
         self.outline.setZValue(-1)
