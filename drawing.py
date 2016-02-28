@@ -110,6 +110,7 @@ class GridScene(DraggableScene):
                     gg.outline.setPen(QtGui.QPen(Qt.yellow, 30))
                     gg.setOpacity(1)
                     hovering_grid = gg
+                    print(len(gg.faces) + len(gg.edges) + len(gg.vertices))
             for gg in self.grid_groups:
                 if hovering_grid:
                     if gg != hovering_grid:
@@ -280,7 +281,7 @@ class GridGroup(QtGui.QGraphicsItemGroup):
         self.setAcceptsHoverEvents(True)
         self.draw()
         self.outline = QtGui.QGraphicsPathItem(self.shape())
-        outline_pen = QtGui.QPen(Qt.transparent, 20)
+        outline_pen = QtGui.QPen(Qt.yellow, 20)
         outline_pen.setCosmetic(True)
         self.outline.setPen(QtGui.QPen(outline_pen))
         self.outline.setZValue(-1)
@@ -404,7 +405,7 @@ class GridGroup(QtGui.QGraphicsItemGroup):
     def shape(self):
         shape = QtGui.QPainterPath()
         for f in self.faces.values():
-            shape += f.shape()
+            shape.addPolygon(f.polygon())
         for v in self.vertices.values():
             shape += v.shape()
         shape = shape.simplified()
