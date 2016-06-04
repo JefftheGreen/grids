@@ -339,6 +339,20 @@ class HexGrid(grid.Grid):
         return members
 
     @classmethod
+    def rotate(cls, coords, center, degrees):
+        if degrees % 60 != 0:
+            raise AttributeError("degrees must be divisible by 60")
+        q, r = coords
+        s = -q-r
+        cq, cr= center
+        cs = -cq-cr
+        newq, newr, news = q-cq, r-cr, s-cs
+        for i in range(degrees // 60):
+            newq, newr, news = -news, -newq, -newr
+        newq, newr, = newq + cq, newr + cr
+        return newq, newr
+
+    @classmethod
     def line_between(cls, face1, face2, rounding='half ceiling'):
         distance = cls.manhattan(face1, face2)
         coord1, coord2 = (cls.to_pixel_face_center(f) for f in (face1, face2))

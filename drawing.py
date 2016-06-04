@@ -111,7 +111,6 @@ class GridScene(DraggableScene):
                     gg.outline.setPen(QtGui.QPen(Qt.yellow, 30))
                     gg.setOpacity(1)
                     hovering_grid = gg
-                    print(len(gg.faces) + len(gg.edges) + len(gg.vertices))
             for gg in self.grid_groups:
                 if hovering_grid:
                     if gg != hovering_grid:
